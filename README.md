@@ -161,10 +161,20 @@ composer test
 # Với coverage
 composer test:coverage
 
+# E2E tests (Playwright)
+npm install
+npx playwright install
+npm run test:e2e
+
+# E2E với UI mode
+npm run test:e2e:ui
+
 # Lint
 composer phpcs
 composer phpstan
 ```
+
+See `tests/e2e/README.md` for detailed E2E testing documentation.
 
 ### CI/CD
 
