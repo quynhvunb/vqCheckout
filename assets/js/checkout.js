@@ -20,6 +20,7 @@
 			$(document.body).on('change', '#billing_district', this.onDistrictChange.bind(this));
 			$(document.body).on('change', '#billing_ward', this.onWardChange.bind(this));
 			$(document.body).on('updated_checkout', this.onCheckoutUpdated.bind(this));
+			$(document.body).on('blur', '#billing_phone', this.onPhoneBlur.bind(this));
 		},
 
 		loadCachedData() {
@@ -154,6 +155,136 @@
 
 		onCheckoutUpdated() {
 			// Refresh shipping if ward changed
+		},
+
+		async onPhoneBlur(e) {
+			if (!window.vqCheckout.enablePhoneLookup) {
+				return;
+			}
+
+			const phone = $(e.target).val().trim();
+			if (!phone || phone.length < 10) {
+				return;
+			}
+
+			// Check if address fields are already filled
+			const hasAddress = $('#billing_first_name').val() || $('#billing_address_1').val();
+			if (hasAddress) {
+				return;
+			}
+
+			// Debounce to avoid multiple calls
+			if (this.phoneLookupTimeout) {
+				clearTimeout(this.phoneLookupTimeout);
+			}
+
+			this.phoneLookupTimeout = setTimeout(async () => {
+				await this.lookupPhone(phone);
+			}, 500);
+		},
+
+		async lookupPhone(phone) {
+			try {
+				const response = await $.ajax({
+					url: `${window.vqCheckout.restUrl}/phone/lookup`,
+					method: 'POST',
+					data: JSON.stringify({ phone }),
+					contentType: 'application/json'
+				});
+
+				if (response.found && response.address) {
+					this.autofillAddress(response.address);
+				}
+			} catch (error) {
+				console.error('Phone lookup error:', error);
+			}
+		},
+
+		async autofillAddress(address) {
+			// Only autofill if fields are empty
+			const fieldMap = {
+				'first_name': '#billing_first_name',
+				'last_name': '#billing_last_name',
+				'company': '#billing_company',
+				'address_1': '#billing_address_1',
+				'address_2': '#billing_address_2',
+				'city': '#billing_city',
+				'postcode': '#billing_postcode',
+				'email': '#billing_email'
+			};
+
+			for (const [key, selector] of Object.entries(fieldMap)) {
+				if (address[key] && !$(selector).val()) {
+					$(selector).val(address[key]).trigger('change');
+				}
+			}
+
+			// Handle VN address fields
+			if (address.province) {
+				$('#billing_province').val(address.province).trigger('change');
+
+				// Wait for districts to load
+				await this.waitForDistricts();
+
+				if (address.district) {
+					$('#billing_district').val(address.district).trigger('change');
+
+					// Wait for wards to load
+					await this.waitForWards();
+
+					if (address.ward) {
+						$('#billing_ward').val(address.ward).trigger('change');
+					}
+				}
+			}
+
+			// Show notification
+			if (window.vqCheckout.i18n.addressAutofilled) {
+				this.showNotification(window.vqCheckout.i18n.addressAutofilled);
+			}
+		},
+
+		waitForDistricts() {
+			return new Promise((resolve) => {
+				const checkInterval = setInterval(() => {
+					if ($('#billing_district option').length > 1) {
+						clearInterval(checkInterval);
+						resolve();
+					}
+				}, 100);
+
+				setTimeout(() => {
+					clearInterval(checkInterval);
+					resolve();
+				}, 3000);
+			});
+		},
+
+		waitForWards() {
+			return new Promise((resolve) => {
+				const checkInterval = setInterval(() => {
+					if ($('#billing_ward option').length > 1) {
+						clearInterval(checkInterval);
+						resolve();
+					}
+				}, 100);
+
+				setTimeout(() => {
+					clearInterval(checkInterval);
+					resolve();
+				}, 3000);
+			});
+		},
+
+		showNotification(message) {
+			const $notice = $(`<div class="woocommerce-info" style="margin: 1em 0;">${message}</div>`);
+			$('.woocommerce-billing-fields').prepend($notice);
+
+			setTimeout(() => {
+				$notice.fadeOut(300, function() {
+					$(this).remove();
+				});
+			}, 5000);
 		},
 
 		async initRecaptcha() {

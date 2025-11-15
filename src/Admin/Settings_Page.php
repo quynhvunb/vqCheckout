@@ -145,6 +145,18 @@ class Settings_Page {
 				'default' => '1',
 			)
 		);
+
+		add_settings_field(
+			'enable_phone_lookup',
+			__( 'Tự động điền địa chỉ theo SĐT', 'vq-checkout' ),
+			array( $this, 'render_checkbox_field' ),
+			'vqcheckout-settings',
+			'vqcheckout_general_section',
+			array(
+				'name'  => 'enable_phone_lookup',
+				'label' => __( 'Cho phép tự động điền địa chỉ dựa trên SĐT đã đặt hàng', 'vq-checkout' ),
+			)
+		);
 	}
 
 	public function sanitize_options( $input ) {

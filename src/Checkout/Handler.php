@@ -179,20 +179,24 @@ class Handler {
 			true
 		);
 
+		$options = get_option( 'vqcheckout_options', array() );
+
 		wp_localize_script(
 			'vqcheckout-checkout',
 			'vqCheckout',
 			array(
-				'restUrl'      => rest_url( 'vqcheckout/v1' ),
-				'recaptcha'    => array(
+				'restUrl'           => rest_url( 'vqcheckout/v1' ),
+				'enablePhoneLookup' => ! empty( $options['enable_phone_lookup'] ),
+				'recaptcha'         => array(
 					'enabled'  => $this->recaptcha->is_enabled(),
 					'version'  => $this->recaptcha->get_version(),
 					'siteKey'  => $this->recaptcha->get_site_key(),
 				),
-				'i18n'         => array(
-					'selectProvince' => __( '-- Chọn Tỉnh/Thành phố --', 'vq-checkout' ),
-					'selectDistrict' => __( '-- Chọn Quận/Huyện --', 'vq-checkout' ),
-					'selectWard'     => __( '-- Chọn Xã/Phường --', 'vq-checkout' ),
+				'i18n'              => array(
+					'selectProvince'    => __( '-- Chọn Tỉnh/Thành phố --', 'vq-checkout' ),
+					'selectDistrict'    => __( '-- Chọn Quận/Huyện --', 'vq-checkout' ),
+					'selectWard'        => __( '-- Chọn Xã/Phường --', 'vq-checkout' ),
+					'addressAutofilled' => __( 'Địa chỉ đã được tự động điền dựa trên số điện thoại.', 'vq-checkout' ),
 				),
 			)
 		);

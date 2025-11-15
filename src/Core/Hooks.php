@@ -44,6 +44,9 @@ class Hooks {
 
 		$admin_controller = new \VQCheckout\API\Admin_Controller( $this->container );
 		$admin_controller->register_routes();
+
+		$phone_controller = new \VQCheckout\API\Phone_Controller();
+		$phone_controller->register_routes();
 	}
 
 	public function register_shipping_methods( $methods ) {
