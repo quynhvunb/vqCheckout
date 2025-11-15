@@ -100,6 +100,21 @@ class Settings_Page {
 		);
 
 		add_settings_section(
+			'vqcheckout_recaptcha_section',
+			__( 'Google reCAPTCHA', 'vq-checkout' ),
+			null,
+			'vqcheckout-settings'
+		);
+
+		add_settings_field(
+			'enable_recaptcha',
+			__( 'Kích hoạt reCAPTCHA', 'vq-checkout' ),
+			array( $this, 'render_recaptcha_field' ),
+			'vqcheckout-settings',
+			'vqcheckout_recaptcha_section'
+		);
+
+		add_settings_section(
 			'vqcheckout_general_section',
 			__( 'Cài đặt chung', 'vq-checkout' ),
 			null,
@@ -135,10 +150,41 @@ class Settings_Page {
 	public function sanitize_options( $input ) {
 		$output = array();
 
-		$checkboxes = array( 'phone_vn', 'enable_postcode', 'enable_gender', 'to_vnd', 'remove_method_title' );
+		$checkboxes = array(
+			'phone_vn',
+			'enable_postcode',
+			'enable_gender',
+			'to_vnd',
+			'remove_method_title',
+			'not_required_email',
+			'freeship_remove_other_methob',
+			'enable_recaptcha_create_order',
+			'enable_recaptcha_get_address',
+		);
 
 		foreach ( $checkboxes as $field ) {
 			$output[ $field ] = isset( $input[ $field ] ) ? '1' : '0';
+		}
+
+		$text_fields = array(
+			'recaptcha_sitekey',
+			'recaptcha_secretkey',
+			'recaptcha_sitekey_v3',
+			'recaptcha_secretkey_v3',
+			'block_order_ip',
+			'block_order_name',
+		);
+
+		foreach ( $text_fields as $field ) {
+			if ( isset( $input[ $field ] ) ) {
+				$output[ $field ] = sanitize_textarea_field( $input[ $field ] );
+			}
+		}
+
+		if ( isset( $input['enable_recaptcha'] ) ) {
+			$output['enable_recaptcha'] = in_array( $input['enable_recaptcha'], array( '0', '1', '2' ), true )
+				? $input['enable_recaptcha']
+				: '0';
 		}
 
 		return $output;
@@ -157,6 +203,80 @@ class Settings_Page {
 			$checked,
 			esc_html( $args['label'] )
 		);
+	}
+
+	public function render_recaptcha_field() {
+		$options = get_option( self::OPTION_NAME, array() );
+		$version = $options['enable_recaptcha'] ?? '0';
+		?>
+		<p>
+			<label>
+				<input type="radio" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[enable_recaptcha]" value="0" <?php checked( '0', $version ); ?>>
+				<?php esc_html_e( 'KHÔNG kích hoạt', 'vq-checkout' ); ?>
+			</label><br>
+			<label>
+				<input type="radio" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[enable_recaptcha]" value="1" <?php checked( '1', $version ); ?>>
+				<?php esc_html_e( 'Sử dụng reCAPTCHA V2', 'vq-checkout' ); ?>
+			</label><br>
+			<label>
+				<input type="radio" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[enable_recaptcha]" value="2" <?php checked( '2', $version ); ?>>
+				<?php esc_html_e( 'Sử dụng reCAPTCHA V3 (Khuyên dùng)', 'vq-checkout' ); ?>
+			</label>
+		</p>
+
+		<table class="form-table">
+			<tr class="recaptcha-v2-fields" style="display: <?php echo $version === '1' ? 'table-row' : 'none'; ?>">
+				<th><?php esc_html_e( 'V2 Site Key', 'vq-checkout' ); ?></th>
+				<td>
+					<input type="text" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[recaptcha_sitekey]"
+						   value="<?php echo esc_attr( $options['recaptcha_sitekey'] ?? '' ); ?>" class="regular-text">
+				</td>
+			</tr>
+			<tr class="recaptcha-v2-fields" style="display: <?php echo $version === '1' ? 'table-row' : 'none'; ?>">
+				<th><?php esc_html_e( 'V2 Secret Key', 'vq-checkout' ); ?></th>
+				<td>
+					<input type="password" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[recaptcha_secretkey]"
+						   value="<?php echo esc_attr( $options['recaptcha_secretkey'] ?? '' ); ?>" class="regular-text">
+				</td>
+			</tr>
+			<tr class="recaptcha-v3-fields" style="display: <?php echo $version === '2' ? 'table-row' : 'none'; ?>">
+				<th><?php esc_html_e( 'V3 Site Key', 'vq-checkout' ); ?></th>
+				<td>
+					<input type="text" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[recaptcha_sitekey_v3]"
+						   value="<?php echo esc_attr( $options['recaptcha_sitekey_v3'] ?? '' ); ?>" class="regular-text">
+				</td>
+			</tr>
+			<tr class="recaptcha-v3-fields" style="display: <?php echo $version === '2' ? 'table-row' : 'none'; ?>">
+				<th><?php esc_html_e( 'V3 Secret Key', 'vq-checkout' ); ?></th>
+				<td>
+					<input type="password" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[recaptcha_secretkey_v3]"
+						   value="<?php echo esc_attr( $options['recaptcha_secretkey_v3'] ?? '' ); ?>" class="regular-text">
+				</td>
+			</tr>
+		</table>
+
+		<p>
+			<label>
+				<input type="checkbox" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[enable_recaptcha_create_order]"
+					   value="1" <?php checked( '1', $options['enable_recaptcha_create_order'] ?? '0' ); ?>>
+				<?php esc_html_e( 'Kích hoạt cho tạo đơn hàng', 'vq-checkout' ); ?>
+			</label>
+		</p>
+
+		<script>
+		jQuery(document).ready(function($) {
+			$('input[name="<?php echo esc_js( self::OPTION_NAME ); ?>[enable_recaptcha]"]').on('change', function() {
+				var version = $(this).val();
+				$('.recaptcha-v2-fields, .recaptcha-v3-fields').hide();
+				if (version === '1') {
+					$('.recaptcha-v2-fields').show();
+				} else if (version === '2') {
+					$('.recaptcha-v3-fields').show();
+				}
+			});
+		});
+		</script>
+		<?php
 	}
 
 	public function render_page() {

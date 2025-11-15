@@ -24,6 +24,7 @@ class Hooks {
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 		add_filter( 'woocommerce_shipping_methods', array( $this, 'register_shipping_methods' ) );
 		add_action( 'admin_menu', array( $this, 'init_admin' ) );
+		add_action( 'wp', array( $this, 'init_checkout' ) );
 	}
 
 	public function init_migrations() {
@@ -59,5 +60,17 @@ class Hooks {
 
 		$assets = new \VQCheckout\Admin\Assets();
 		$assets->init();
+	}
+
+	public function init_checkout() {
+		if ( is_admin() ) {
+			return;
+		}
+
+		$fields = new \VQCheckout\Checkout\Fields();
+		$fields->init();
+
+		$handler = new \VQCheckout\Checkout\Handler();
+		$handler->init();
 	}
 }
