@@ -17,9 +17,9 @@ class Settings_Page {
 	}
 
 	public function init() {
-		add_action( 'admin_menu', array( $this, 'add_menu' ), 20 );
-		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		error_log( 'VQCheckout Settings_Page: init() called' );
+		add_action( 'admin_menu', array( $this, 'add_menu' ), 99 );
+		add_action( 'admin_init', array( $this, 'register_settings' ) );
 	}
 
 	public function add_menu() {
