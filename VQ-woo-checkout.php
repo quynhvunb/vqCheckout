@@ -85,9 +85,24 @@ if ( ! class_exists( 'VQCheckout_Bootstrap' ) ) {
 
 		private function load_autoloader() {
 			$autoload = VQCHECKOUT_PATH . 'vendor/autoload.php';
+			error_log( 'VQCheckout: Plugin path = ' . VQCHECKOUT_PATH );
+			error_log( 'VQCheckout: Autoload path = ' . $autoload );
+			error_log( 'VQCheckout: Autoload exists = ' . ( file_exists( $autoload ) ? 'YES' : 'NO' ) );
+
 			if ( file_exists( $autoload ) ) {
 				require_once $autoload;
+				error_log( 'VQCheckout: Autoload loaded' );
+			} else {
+				error_log( 'VQCheckout: ERROR - No autoload! Run: composer dump-autoload' );
+				add_action( 'admin_notices', array( $this, 'autoload_missing_notice' ) );
 			}
+		}
+
+		public function autoload_missing_notice() {
+			echo '<div class="error"><p>';
+			echo '<strong>VQ Checkout:</strong> Composer autoload not found. ';
+			echo 'Please run <code>composer dump-autoload</code> in: <code>' . esc_html( VQCHECKOUT_PATH ) . '</code>';
+			echo '</p></div>';
 		}
 
 		private function init() {
@@ -103,9 +118,10 @@ if ( ! class_exists( 'VQCheckout_Bootstrap' ) ) {
 
 			if ( class_exists( 'VQCheckout\\Core\\Plugin' ) ) {
 				\VQCheckout\Core\Plugin::instance();
-				error_log( 'VQCheckout Bootstrap: Plugin initialized' );
+				error_log( 'VQCheckout: Plugin class initialized' );
 			} else {
-				error_log( 'VQCheckout Bootstrap: Plugin class not found!' );
+				error_log( 'VQCheckout: ERROR - Plugin class not found!' );
+				error_log( 'VQCheckout: src/Core/Plugin.php exists = ' . ( file_exists( VQCHECKOUT_PATH . 'src/Core/Plugin.php' ) ? 'YES' : 'NO' ) );
 			}
 		}
 
