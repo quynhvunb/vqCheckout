@@ -22,6 +22,7 @@ class Hooks {
 	public function init() {
 		add_action( 'init', array( $this, 'init_migrations' ) );
 		add_action( 'init', array( $this, 'init_currency' ) );
+		add_action( 'init', array( $this, 'init_blocks' ) );
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 		add_filter( 'woocommerce_shipping_methods', array( $this, 'register_shipping_methods' ) );
 		add_action( 'admin_menu', array( $this, 'init_admin' ) );
@@ -57,6 +58,11 @@ class Hooks {
 	public function init_currency() {
 		$currency = new \VQCheckout\Checkout\Currency();
 		$currency->init();
+	}
+
+	public function init_blocks() {
+		$blocks = new \VQCheckout\Checkout\Blocks_Integration();
+		$blocks->init();
 	}
 
 	public function init_admin() {

@@ -15,10 +15,11 @@ Tối ưu trang thanh toán WooCommerce cho thị trường Việt Nam với ph�
 - ✅ reCAPTCHA v3 & rate limiting (P0.5)
 - ✅ Admin UI quản lý rates (P0.5)
 
-### P1 (Upcoming)
-- ⏳ Woo Blocks support
-- ⏳ Tự điền địa chỉ theo SĐT
-- ⏳ Export/Import rates UI
+### P1 (Enhanced Features)
+- ✅ WooCommerce Blocks support (Store API integration)
+- ✅ Tự điền địa chỉ theo SĐT (privacy-by-design)
+- ✅ Export/Import rates (JSON format)
+- ✅ Bulk operations (delete, block, unblock)
 - ⏳ E2E tests
 
 ### P2 (Future)
@@ -76,6 +77,24 @@ wp eval "VQCheckout\Data\Seeder::seed();"
    - Đặt **Tiêu đề phương thức**
    - Đặt **Phí vận chuyển mặc định**
    - Thêm quy tắc cho từng xã/phường
+
+## WooCommerce Blocks Support
+
+Plugin hỗ trợ đầy đủ **WooCommerce Checkout Block** (Gutenberg blocks).
+
+### Kích hoạt Blocks
+
+1. Vào **Pages → Checkout**
+2. Chuyển sang **Block Editor** (nếu đang dùng Classic Editor)
+3. Các trường Tỉnh/Thành, Quận/Huyện, Xã/Phường sẽ tự động hiển thị trong Checkout Block
+
+### Tính năng Blocks
+
+- ✅ Tích hợp Store API
+- ✅ Dependent selects (Province → District → Ward)
+- ✅ Validation tự động
+- ✅ Tương thích với Checkout Block settings
+- ✅ Responsive design
 
 ## REST API
 
