@@ -23,6 +23,7 @@ class Hooks {
 		add_action( 'init', array( $this, 'init_migrations' ) );
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 		add_filter( 'woocommerce_shipping_methods', array( $this, 'register_shipping_methods' ) );
+		add_action( 'admin_menu', array( $this, 'init_admin' ) );
 	}
 
 	public function init_migrations() {
@@ -38,10 +39,25 @@ class Hooks {
 
 		$rate_controller = new \VQCheckout\API\Rate_Controller( $this->container );
 		$rate_controller->register_routes();
+
+		$admin_controller = new \VQCheckout\API\Admin_Controller( $this->container );
+		$admin_controller->register_routes();
 	}
 
 	public function register_shipping_methods( $methods ) {
 		$methods['vqcheckout_ward_rate'] = 'VQCheckout\\Shipping\\WC_Method';
 		return $methods;
+	}
+
+	public function init_admin() {
+		if ( ! is_admin() ) {
+			return;
+		}
+
+		$settings_page = new \VQCheckout\Admin\Settings_Page();
+		$settings_page->init();
+
+		$assets = new \VQCheckout\Admin\Assets();
+		$assets->init();
 	}
 }
