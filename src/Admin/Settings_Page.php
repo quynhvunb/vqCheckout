@@ -17,11 +17,13 @@ class Settings_Page {
 	}
 
 	public function init() {
-		add_action( 'admin_menu', array( $this, 'add_menu' ) );
+		add_action( 'admin_menu', array( $this, 'add_menu' ), 20 );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
+		error_log( 'VQCheckout Settings_Page: init() called' );
 	}
 
 	public function add_menu() {
+		error_log( 'VQCheckout Settings_Page: add_menu() called' );
 		add_menu_page(
 			__( 'VQ Checkout', 'vq-checkout' ),
 			__( 'VQ Checkout', 'vq-checkout' ),
@@ -31,6 +33,7 @@ class Settings_Page {
 			'dashicons-cart',
 			56
 		);
+		error_log( 'VQCheckout Settings_Page: Menu added' );
 	}
 
 	public function register_settings() {
